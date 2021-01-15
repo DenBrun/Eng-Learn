@@ -592,6 +592,20 @@ async def test(message: types.Message):
     await send_revision(db.getUser(message.from_user.id))
 
 
+@dp.message_handler(commands=['all_users'])
+async def send_all(message: types.Message):
+    if message.from_user.id != config.admin_id:
+        return
+    
+    global users
+    users_str = ''
+
+    for user in users:
+        users_str += f'[{user.first_name}](tg://user?id={user.user_id})\n'
+    
+    await message.reply(users_str, parse_mode='Markdown')
+
+
 @dp.message_handler(commands=['send_all'])
 async def send_all(message: types.Message):
     if message.from_user.id != config.admin_id:
