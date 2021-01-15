@@ -674,6 +674,7 @@ async def periodic(sleep_for):
                     blocked_bot = True
         if blocked_bot:
             users = db.getAllUsers()
+            blocked_bot = False
 
         await asyncio.sleep(sleep_for)
             
