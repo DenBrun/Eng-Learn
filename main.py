@@ -662,14 +662,18 @@ async def send_revision(user:User):
 
 async def periodic(sleep_for):
     global users
+    blocked_bot = False
     while True:
         for user in users:
             if await user.check_learning_time() == True:
                 try:
                     await send_revision(db.getUser(user.user_id))
                 except aiogram.utils.exceptions.BotBlocked:
-                    print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                    print(f'Info: {user.first_name} ({user.user_id}) has blocked bot')
                     db.remove_user(user.user_id)
+                    blocked_bot = True
+        if blocked_bot:
+            users = db.getAllUsers()
 
         await asyncio.sleep(sleep_for)
             
@@ -679,3 +683,4 @@ if __name__ == '__main__':
     #executor.start_polling(dp, skip_updates=True)
     dp.loop.create_task(periodic(30))
     executor.start_polling(dp, skip_updates=True)
+    
