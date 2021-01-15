@@ -593,7 +593,7 @@ async def test(message: types.Message):
 
 
 @dp.message_handler(commands=['all_users'])
-async def send_all(message: types.Message):
+async def send_all_users(message: types.Message):
     if message.from_user.id != config.admin_id:
         return
     
