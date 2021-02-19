@@ -610,24 +610,75 @@ async def send_all_users(message: types.Message):
 async def send_all(message: types.Message):
     if message.from_user.id != config.admin_id:
         return
-    await message.answer('Enter text')
+    await message.answer('Send media')
     await states.Admin_functions.waiting_for_mailing_text.set()
 
-@dp.message_handler(state=states.Admin_functions.waiting_for_mailing_text)
-async def mail_text(message: types.Message, state=FSMContext):
-    text = message.text
-    if text == '/cancel':
-        await state.finish()
-        await message.answer('Canceled')
-        return
-
+@dp.message_handler(state=states.Admin_functions.waiting_for_mailing_text, content_types=ContentType.ANY)
+async def mail_media(message: types.Message, state=FSMContext):
     global users
-    for user in users:
-        try:
-            await bot.send_message(user.user_id, text)
-        except aiogram.utils.exceptions.BotBlocked:
-            print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
-            db.remove_user(user.user_id)
+    if message.content_type == ContentType.TEXT:
+        text = message.text
+
+        if text == '/cancel':
+            await state.finish()
+            await message.answer('Canceled')
+            return
+
+        for user in users:
+            try:
+                await bot.send_message(user.user_id, text)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+
+    elif message.content_type == ContentType.ANIMATION:
+        animation = message.animation.file_id
+        for user in users:
+            try:
+                await bot.send_animation(user.user_id, animation)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+
+    elif message.content_type == ContentType.PHOTO:
+        photo = message.photo[0].file_id
+        for user in users:
+            try:
+                await bot.send_photo(user.user_id, photo)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+
+    elif message.content_type == ContentType.VIDEO:
+        video = message.video.file_id
+        for user in users:
+            try:
+                await bot.send_video(user.user_id, video)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+
+    elif message.content_type == ContentType.DOCUMENT:
+        document = message.document.file_id
+        for user in users:
+            try:
+                await bot.send_document(user.user_id, document)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+
+    elif message.content_type == ContentType.STICKER:
+        sticker = message.sticker.file_id
+        for user in users:
+            try:
+                await bot.send_document(user.user_id, sticker)
+            except aiogram.utils.exceptions.BotBlocked:
+                print(f'Error: {user.first_name} ({user.user_id}) has blocked bot')
+                db.remove_user(user.user_id)
+    else:
+        await message.answer('Unknown type')
+        await state.finish()
+
     await message.answer('Finished')
     await state.finish()
 
